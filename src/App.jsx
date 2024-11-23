@@ -4,20 +4,23 @@ import UserList from './components/UserManagement/UserList';
 import UserForm from './components/UserManagement/UserForm';
 import RoleList from './components/RoleManagement/RoleList';
 import RoleForm from './components/RoleManagement/RoleForm';
-import PermissionForm from './components/PermissionManagement/PermissionForm'; // Import PermissionForm
-import PermissionList from './components/PermissionManagement/PermissionList'; // Import PermissionList
+import PermissionForm from './components/PermissionManagement/PermissionForm'; 
+import PermissionList from './components/PermissionManagement/PermissionList'; 
 import Notification from './components/Notification';
+import Sidebar from './components/Sidebar'; // Import Sidebar
+import MainContent from './components/MainContent'; // Import MainContent
 
 const App = () => {
     const [users, setUsers] = useState([]);
     const [roles, setRoles] = useState([]);
-    const [permissions, setPermissions] = useState(['Read', 'Write', 'Delete']); // Initialize permissions
+    const [permissions, setPermissions] = useState(['Read', 'Write', 'Delete']); 
     const [currentUser, setCurrentUser] = useState(null);
     const [currentRole, setCurrentRole] = useState(null);
-    const [editPermission, setEditPermission] = useState(null); // State for editing permission
+    const [editPermission, setEditPermission] = useState(null); 
     const [notificationMessage, setNotificationMessage] = useState('');
     const [notificationType, setNotificationType] = useState('');
     const [showNotification, setShowNotification] = useState(false);
+    const [activeSection, setActiveSection] = useState('users'); // State for active section
 
     // Handle user operations
     const handleAddUser = (user) => {
@@ -78,7 +81,32 @@ const App = () => {
      };
 
      return (
-         <div className='p-6 bg-gray-100 min-h-screen'>
+         <div className='flex'>
+             {/* Sidebar */}
+             <Sidebar activeSection={activeSection} setActiveSection={setActiveSection} />
+
+             {/* Main Content */}
+             <MainContent 
+                 activeSection={activeSection}
+                 users={users}
+                 roles={roles}
+                 handleAddUser={handleAddUser}
+                 handleDeleteUser={handleDeleteUser}
+                 setPermissions={setPermissions}
+                 handleEditUser={handleEditUser}
+                 handleAddRole={handleAddRole}
+                 handleDeleteRole={handleDeleteRole}
+                 handleEditRole={handleEditRole}
+                 permissions={permissions}
+                 currentUser={currentUser}  // Pass current user for editing
+                 currentRole={currentRole}  // Pass current role for editing
+                 setCurrentUser={setCurrentUser}
+                 setCurrentRole={setCurrentRole}
+                 showNotification={showNotificationMessage} // Pass the notification function here
+                 editPermission={editPermission} // Pass editPermission state if needed
+                 setEditPermission={setEditPermission} // Function to update permission editing state
+             />
+
              {/* Notification */}
              {showNotification && (
                  <Notification 
@@ -87,33 +115,6 @@ const App = () => {
                      onClose={() => setShowNotification(false)} 
                  />
              )}
-             
-             {/* User Management */}
-             <h1 className='text-center text-xl font-bold mb-6'>User Management</h1>
-             <UserForm 
-                 user={currentUser} 
-                 onSubmit={currentUser ? handleEditUser : handleAddUser} 
-                 roles={roles} 
-                 existingUsers={users} 
-             />
-             <UserList users={users} onEdit={setCurrentUser} onDelete={handleDeleteUser} />
-
-             {/* Role Management */}
-             <h1 className='text-center text-xl font-bold mt-8 mb-6'>Role Management</h1>
-             <RoleForm 
-                 role={currentRole} 
-                 onSubmit={currentRole ? handleEditRole : handleAddRole} 
-                 existingRoles={roles}
-                 permissions={permissions}
-                 setPermissions={setPermissions}
-                 showNotification={showNotificationMessage}
-             />
-             <RoleList roles={roles} onEdit={setCurrentRole} onDelete={handleDeleteRole} />
-             
-             {/* Permission Management */}
-             <h1 className='text-center text-xl font-bold mt-8 mb-6'>Manage Permissions</h1>
-             <PermissionForm permissions={permissions} setPermissions={setPermissions} showNotification={showNotificationMessage} editPermission={editPermission} />
-             <PermissionList permissions={permissions} setPermissions={setPermissions} showNotification={showNotificationMessage} setEditPermission={setEditPermission}/>
          </div>  
      );
 }

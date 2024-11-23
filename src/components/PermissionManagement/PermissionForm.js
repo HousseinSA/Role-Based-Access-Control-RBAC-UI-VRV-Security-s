@@ -16,20 +16,26 @@ const PermissionForm = ({ permissions, setPermissions, showNotification, editPer
     const handleAddOrUpdatePermission = () => {
         const capitalizedPermission = newPermission.charAt(0).toUpperCase() + newPermission.slice(1).toLowerCase();
 
-        if (capitalizedPermission) {
-            if (!permissions.includes(capitalizedPermission)) {
-                // Adding a new permission
-                setPermissions([...permissions, capitalizedPermission]);
-                showNotification(`Permission "${capitalizedPermission}" added successfully!`, 'success');
-            } else {
-                showNotification(`A permission with the name "${capitalizedPermission}" already exists.`, 'error');
-            }
+        // Check if the permission already exists
+        if (permissions.includes(capitalizedPermission) && !editPermission) {
+            showNotification(`A permission with the name "${capitalizedPermission}" already exists.`, 'error');
+            return;
         }
 
         // If editing an existing permission
-        if (editPermission && permissions.includes(editPermission)) {
+        if (editPermission) {
+            if (capitalizedPermission !== editPermission && permissions.includes(capitalizedPermission)) {
+                showNotification(`A permission with the name "${capitalizedPermission}" already exists.`, 'error');
+                return;
+            }
+
+            // Update the existing permission
             setPermissions(permissions.map(p => (p === editPermission ? capitalizedPermission : p)));
             showNotification(`Permission updated to "${capitalizedPermission}" successfully!`, 'success');
+        } else {
+            // Adding a new permission
+            setPermissions([...permissions, capitalizedPermission]);
+            showNotification(`Permission "${capitalizedPermission}" added successfully!`, 'success');
         }
 
         // Reset input field
