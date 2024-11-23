@@ -1,38 +1,37 @@
-.App {
-  text-align: center;
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,100;0,300;0,400;0,700;0,900;1,100;1,300;1,400;1,700;1,900&family=Quicksand:wght@300..700&family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap');
+body {
+  font-family: "Roboto", serif;
+  font-weight: 400;
+  font-style: normal;
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
+
+
+/* src/components/CheckboxStyles.css */
+.rounded-checkbox {
+  appearance: none; /* Remove default checkbox styling */
+  width: 20px; /* Set width */
+  height: 20px; /* Set height */
+  border: 1px solid #ccc; /* Border color */
+  border-radius: 50%; /* Make it round */
+  position: relative; /* Positioning for the checkmark */
+  cursor: pointer; /* Pointer cursor on hover */
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
+.rounded-checkbox:checked {
+  background-color: #66bb6a; /* Background color when checked */
 }
 
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
-}
-
-.App-link {
-  color: #61dafb;
-}
-
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+.rounded-checkbox:checked::after {
+  content: ''; /* Create checkmark */
+  position: absolute;
+  left: 5px; /* Positioning of checkmark */
+  top: 1px; /* Positioning of checkmark */
+  width: 10px; /* Checkmark width */
+  height: 10px; /* Checkmark height */
+  border-radius: 50%; /* Make checkmark round */
 }
