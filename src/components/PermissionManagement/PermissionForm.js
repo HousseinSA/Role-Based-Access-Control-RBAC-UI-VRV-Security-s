@@ -1,62 +1,67 @@
 // src/components/PermissionManagement/PermissionForm.js
 import React, { useState, useEffect } from 'react';
-import Notification from '../Notification'; // Import Notification
 
-const PermissionForm = ({ permissions, setPermissions, showNotification, editPermission }) => {
-    const [newPermission, setNewPermission] = useState('');
+const PermissionForm = ({ permission, onSubmit, existingPermissions = [], showNotification, onCancel }) => {
+   const [name, setName] = useState('');
 
-    useEffect(() => {
-        if (editPermission) {
-            setNewPermission(editPermission);
-        } else {
-            setNewPermission('');
-        }
-    }, [editPermission]);
+   useEffect(() => {
+       if (permission) {
+           setName(permission.name); // Set name for editing
+       } else {
+           resetFields(); // Reset fields for adding
+       }
+   }, [permission]);
 
-    const handleAddOrUpdatePermission = () => {
-        const capitalizedPermission = newPermission.charAt(0).toUpperCase() + newPermission.slice(1).toLowerCase();
+   const resetFields = () => {
+       setName('');
+   };
 
-        // Check if the permission already exists
-        if (permissions.includes(capitalizedPermission) && !editPermission) {
-            showNotification(`A permission with the name "${capitalizedPermission}" already exists.`, 'error');
-            return;
-        }
+   const handleSubmit = (e) => {
+       e.preventDefault();
 
-        // If editing an existing permission
-        if (editPermission) {
-            if (capitalizedPermission !== editPermission && permissions.includes(capitalizedPermission)) {
-                showNotification(`A permission with the name "${capitalizedPermission}" already exists.`, 'error');
-                return;
-            }
+       if (existingPermissions.some((p) => p.name === name && p.id !== permission?.id)) {
+           showNotification("A permission with this name already exists.", "error");
+           return;
+       }
 
-            // Update the existing permission
-            setPermissions(permissions.map(p => (p === editPermission ? capitalizedPermission : p)));
-            showNotification(`Permission updated to "${capitalizedPermission}" successfully!`, 'success');
-        } else {
-            // Adding a new permission
-            setPermissions([...permissions, capitalizedPermission]);
-            showNotification(`Permission "${capitalizedPermission}" added successfully!`, 'success');
-        }
+       if (!name) {
+           showNotification("Please provide a permission name.", "error");
+           return;
+       }
 
-        // Reset input field
-        setNewPermission('');
-    };
+       const newPermissionData = {
+           id: permission?.id || Date.now(),
+           name,
+       };
 
-    return (
-        <div className="mb-6">
-            <h3 className="text-lg font-semibold mb-3">{editPermission ? 'Edit Permission' : 'Add Permission'}</h3>
-            <input 
-                type="text" 
-                value={newPermission} 
-                onChange={(e) => setNewPermission(e.target.value)} 
-                placeholder="New Permission" 
-                className="border border-gray-300 rounded-md p-2 w-full mb-3"
-            />
-            <button onClick={handleAddOrUpdatePermission} className="bg-blue-500 text-white rounded-md py-2 px-4 mb-3">
-                {editPermission ? 'Update Permission' : 'Add Permission'}
-            </button>
-        </div>
-    );
+       // Notify parent component about the new or updated permission.
+       onSubmit(newPermissionData);
+
+       // Reset fields after submission
+       resetFields();
+   };
+
+   return (
+       <form onSubmit={handleSubmit} className="mb-6 p-4 bg-white rounded-lg shadow-md">
+           <h3 className="text-lg font-semibold mb-3">{permission ? 'Update Permission' : 'Add Permission'}</h3>
+           <input 
+               type="text" 
+               value={name} 
+               onChange={(e) => setName(e.target.value)} 
+               placeholder="Permission Name" 
+               required 
+               className="border border-gray-300 rounded-md p-2 w-full mb-3"
+           />
+           <button type='submit' className='bg-primary-500 text-white rounded-md py-2 px-4'>
+               {permission ? 'Update Permission' : 'Add Permission'}
+           </button>
+           {permission && (
+               <button type='button' onClick={onCancel} className='bg-gray-300 rounded-md px-4 py-2 hover:bg-gray-400 transition ml-2'>
+                   Cancel
+               </button>
+           )}
+       </form>
+   );
 };
 
 export default PermissionForm;

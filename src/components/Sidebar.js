@@ -1,29 +1,41 @@
-// src/components/Sidebar.js
 import React from 'react';
+import Select from 'react-select'; // Import React Select
 
 const Sidebar = ({ activeSection, setActiveSection }) => {
+    const options = [
+        { value: 'users', label: 'Users' },
+        { value: 'roles', label: 'Roles' },
+        { value: 'permissions', label: 'Permissions' }
+    ];
+
+    const handleChange = (selectedOption) => {
+        setActiveSection(selectedOption.value); // Update active section based on selection
+    };
+
     return (
-        <div className="w-64 bg-gray-200 h-full p-4">
-            <h2 className="text-lg font-semibold mb-4">Dashboard</h2>
-            <ul>
-                <li 
-                    className={`cursor-pointer py-2 px-4 rounded ${activeSection === 'users' ? 'bg-blue-300' : ''}`}
-                    onClick={() => setActiveSection('users')}
-                >
-                    Users
-                </li>
-                <li 
-                    className={`cursor-pointer py-2 px-4 rounded ${activeSection === 'roles' ? 'bg-blue-300' : ''}`}
-                    onClick={() => setActiveSection('roles')}
-                >
-                    Roles
-                </li>
-                <li 
-                    className={`cursor-pointer py-2 px-4 rounded ${activeSection === 'permissions' ? 'bg-blue-300' : ''}`}
-                    onClick={() => setActiveSection('permissions')}
-                >
-                    Permissions
-                </li>
+        <div className='md:w-64 bg-gray-200 h-full p-4 hidden md:block'>
+                        <h2 className="text-lg font-semibold mb-4 text-primary-500">Dashboard</h2>
+
+            <div className="block md:hidden mb-4">
+                <Select
+                    options={options}
+                    onChange={handleChange}
+                    placeholder="Select an option"
+                    className="mb-3"
+                />
+            </div>
+
+            {/* Sidebar items for larger screens */}
+            <ul className="hidden md:block">
+                {options.map(option => (
+                    <li 
+                        key={option.value}
+                        className={`cursor-pointer py-2 px-4 rounded ${activeSection === option.value ? 'bg-primary-300' : ''}`}
+                        onClick={() => setActiveSection(option.value)}
+                    >
+                        {option.label}
+                    </li>
+                ))}
             </ul>
         </div>
     );

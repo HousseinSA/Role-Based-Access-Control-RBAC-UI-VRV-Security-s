@@ -24,9 +24,9 @@ const ConfirmationDialog = ({ message, onConfirm, onCancel }) => {
     };
 
     return (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+        <div className="fixed inset-0 flex  items-center justify-center bg-black bg-opacity-50 z-50">
             <div ref={dialogRef} className="bg-white p-8 rounded-lg shadow-lg max-w-md w-full">
-                <h3 className="text-lg font-semibold mb-4">{message}</h3>
+                <h3 className="text-lg font-semibold mb-4 text-primary-500">{message}</h3>
                 <div className="flex justify-end">
                     <button 
                         onClick={handleCancel} 

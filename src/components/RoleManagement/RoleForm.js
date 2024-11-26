@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import Notification from '../Notification';
 
-const RoleForm = ({ role, onSubmit, existingRoles, permissions }) => {
+const RoleForm = ({ role, onSubmit, existingRoles, permissions,onCancel }) => {
     const [roleName, setRoleName] = useState('');
     const [selectedPermissions, setSelectedPermissions] = useState([]);
     const [notificationMessage, setNotificationMessage] = useState('');
@@ -15,7 +15,6 @@ const RoleForm = ({ role, onSubmit, existingRoles, permissions }) => {
             setRoleName(role.name);
             setSelectedPermissions(role.permissions || []);
         } else {
-            // Reset fields if no role is selected
             resetFields();
         }
     }, [role]);
@@ -40,12 +39,27 @@ const RoleForm = ({ role, onSubmit, existingRoles, permissions }) => {
             return;
         }
 
-        // Clear previous messages and submit the form
-        onSubmit({ id: role?.id || Date.now(), name: roleName, permissions: selectedPermissions });
+        // Prepare new role object and submit it to parent component.
+        const newRole = { id: role?.id || Date.now(), name: roleName, permissions: selectedPermissions };
+
+        // Save or update role in local storage
+        const rolesInLocalStorage = JSON.parse(localStorage.getItem('roles')) || [];
+
+        if (role) {
+            // Update existing role
+            const updatedRoles = rolesInLocalStorage.map(r => (r.id === role.id ? newRole : r));
+            localStorage.setItem('roles', JSON.stringify(updatedRoles));
+        } else {
+            // Add new role
+            rolesInLocalStorage.push(newRole);
+            localStorage.setItem('roles', JSON.stringify(rolesInLocalStorage));
+        }
+
+        onSubmit(newRole); // Notify parent component about the new or updated role
 
         // Clear form fields after submission only if it's a new role creation
         if (!role) resetFields();
-        
+
         showNotificationMessage(role ? 'Role updated successfully!' : 'Role created successfully!', 'success');
     };
 
@@ -54,9 +68,11 @@ const RoleForm = ({ role, onSubmit, existingRoles, permissions }) => {
         setNotificationType(type);
         setShowNotification(true);
 
-         // Hide notification after a delay
+         // Hide notification after a delay.
          setTimeout(() => {
              setShowNotification(false);
+             setNotificationMessage(""); // Clear message after hiding.
+             setNotificationType("");     // Clear type after hiding.
          }, 3000);
      };
 
@@ -98,14 +114,18 @@ const RoleForm = ({ role, onSubmit, existingRoles, permissions }) => {
                            onChange={() => handlePermissionChange(permission)} 
                            className='rounded-checkbox mr-2'
                        />
-                       {permission} {/* Display permission in original case */}
+                       {permission.name} 
                    </label>
                ))}
              </div>
-
-             <button type='submit' className='bg-blue-500 text-white rounded-md py-2 px-4'>
+             <button type='submit' className='bg-primary-500 text-white rounded-md py-2 px-4'>
               {role ? 'Update Role' : 'Add Role'}
              </button>
+             {role && (
+               <button type='button' onClick={onCancel} className='bg-gray-300 rounded-md px-4 py-2 hover:bg-gray-400 transition ml-2'>
+                   Cancel
+               </button>
+           )}
          </form>
      );
 };

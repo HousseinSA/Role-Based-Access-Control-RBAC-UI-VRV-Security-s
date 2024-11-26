@@ -1,133 +1,188 @@
 // src/components/UserManagement/UserForm.js
-import React, { useState, useEffect } from 'react';
-import Notification from '../Notification';
-import Select from 'react-select'; // Import React Select
-import { v4 as uuidv4 } from 'uuid'; // Import uuid
+import React, { useState, useEffect } from "react"
+import Notification from "../Notification"
+import Select from "react-select" // Import React Select
+import { v4 as uuidv4 } from "uuid" // Import uuid
 
-const UserForm = ({ user, onSubmit, roles, existingUsers }) => {
-    const [name, setName] = useState('');
-    const [email, setEmail] = useState('');
-    const [status, setStatus] = useState(true);
-    const [selectedRole, setSelectedRole] = useState(null); // Change to null for React Select
+const UserForm = ({ user, onSubmit, roles, existingUsers, onCancel }) => {
+  const [name, setName] = useState("")
+  const [email, setEmail] = useState("")
+  const [status, setStatus] = useState(true)
+  const [selectedRole, setSelectedRole] = useState(null) // Change to null for React Select
 
-    // Notification states
-    const [notificationMessage, setNotificationMessage] = useState('');
-    const [notificationType, setNotificationType] = useState('');
-    const [showNotification, setShowNotification] = useState(false);
+  // Notification states
+  const [notificationMessage, setNotificationMessage] = useState("")
+  const [notificationType, setNotificationType] = useState("")
+  const [showNotification, setShowNotification] = useState(false)
 
-    // Populate the form fields when a user is selected for editing
-    useEffect(() => {
-        if (user) {
-            setName(user.name);
-            setEmail(user.email);
-            setStatus(user.status);
-            setSelectedRole({ value: user.role, label: user.role }); // Set selected role as an object
-        } else {
-            resetFields();
-        }
-    }, [user]);
+  // Populate the form fields when a user is selected for editing
+  useEffect(() => {
+    if (user) {
+      setName(user.name)
+      setEmail(user.email)
+      setStatus(user.status)
+      setSelectedRole({ value: user.role, label: user.role }) // Set selected role as an object
+    } else {
+      resetFields()
+    }
+  }, [user])
 
-    const resetFields = () => {
-        setName('');
-        setEmail('');
-        setStatus(true);
-        setSelectedRole(null); // Reset to null
-    };
+  const resetFields = () => {
+    setName("")
+    setEmail("")
+    setStatus(true)
+    setSelectedRole(null) // Reset to null
+  }
 
-    const handleSubmit = (e) => {
-        e.preventDefault();
+  const handleCancel = () => {
+    resetFields() // Reset fields when cancel is clicked
+    onCancel() // Call the onCancel function provided by the parent
+  }
 
-        // Check for duplicate users
-        if (existingUsers.some(u => u.name === name && u.id !== user?.id)) {
-            showNotificationMessage('A user with this name already exists.', 'error');
-            return;
-        }
+  const handleSubmit = (e) => {
+    e.preventDefault()
 
-        if (existingUsers.some(u => u.email === email && u.id !== user?.id)) {
-            showNotificationMessage('A user with this email already exists.', 'error');
-            return;
-        }
+    // Check for duplicate users
+    if (existingUsers.some((u) => u.name === name && u.id !== user?.id)) {
+      showNotificationMessage("A user with this name already exists.", "error")
+      return
+    }
 
-        // Ensure all fields are filled
-        if (!name || !email || !selectedRole) {
-            showNotificationMessage('Please fill in all fields.', 'error');
-            return;
-        }
+    if (existingUsers.some((u) => u.email === email && u.id !== user?.id)) {
+      showNotificationMessage("A user with this email already exists.", "error")
+      return
+    }
 
-        // Use uuid for generating a new user ID
-        onSubmit({ id: user?.id || uuidv4(), name, email, status, role: selectedRole.value });
+    // Ensure all fields are filled
+    if (!name || !email || !selectedRole) {
+      showNotificationMessage("Please fill in all fields.", "error")
+      return
+    }
 
-        // Clear form fields after submission only if it's a new user creation
-        if (!user) resetFields();
-    };
+    // Use uuid for generating a new user ID
+    onSubmit({
+      id: user?.id || uuidv4(),
+      name,
+      email,
+      status,
+      role: selectedRole.value,
+    })
 
-    const showNotificationMessage = (message, type) => {
-        setNotificationMessage(message);
-        setNotificationType(type);
-        setShowNotification(true);
+    // Clear form fields after submission only if it's a new user creation
+    if (!user) resetFields()
+  }
 
-         // Hide notification after a delay
-         setTimeout(() => {
-             setShowNotification(false);
-         }, 3000); // Duration should match the animation duration in Notification.js
-    };
+  const showNotificationMessage = (message, type) => {
+    setNotificationMessage(message)
+    setNotificationType(type)
+    setShowNotification(true)
 
-    // Prepare options for react-select
-    const roleOptions = roles.map(role => ({
-        value: role.name,
-        label: role.name,
-    }));
+    // Hide notification after a delay
+    setTimeout(() => {
+      setShowNotification(false)
+    }, 3000) // Duration should match the animation duration in Notification.js
+  }
 
-    return (
-        <form onSubmit={handleSubmit} className="mb-6 p-4 bg-white rounded-lg shadow-md">
-            {showNotification && (
-                <Notification 
-                    message={notificationMessage} 
-                    type={notificationType} 
-                    onClose={() => setShowNotification(false)} 
-                />
-            )}
-            <h3 className="text-lg font-semibold mb-3">{user ? 'Edit User' : 'Add User'}</h3>
-            <input 
-                type="text" 
-                value={name} 
-                onChange={(e) => setName(e.target.value)} 
-                placeholder="Name" 
-                required 
-                className="border border-gray-300 rounded-md p-2 w-full mb-3"
-            />
-            <input 
-                type="email" 
-                value={email} 
-                onChange={(e) => setEmail(e.target.value)} 
-                placeholder="Email" 
-                required 
-                className="border border-gray-300 rounded-md p-2 w-full mb-3"
-            />
-            <label className="flex items-center mb-3">
-                <input 
-                    type="checkbox" 
-                    checked={status} 
-                    onChange={(e) => setStatus(e.target.checked)} 
-                    className="rounded-checkbox"
-                />
-                <span className="ml-2">Active</span>
-            </label>
-            
-            {/* Custom Styled Select */}
-            <Select
-                options={roleOptions}
-                value={selectedRole}
-                onChange={(option) => setSelectedRole(option)} // Set selected role as an object
-                placeholder="Select Role"
-                className="mb-3"
-            />
+  // Prepare options for react-select
+  const roleOptions = roles.map((role) => ({
+    value: role.name,
+    label: role.name,
+  }))
 
-            <button type="submit" className="bg-blue-500 text-white rounded-md py-2 px-4">
-               {user ? 'Update User' : 'Add User'}
-           </button>
-       </form>
-   );
+  const customStyles = {
+    option: (provided, state) => ({
+        ...provided,
+        backgroundColor: state.isFocused ? '#66cc66' : state.isSelected ? '#c2f0c2' : '#fff', // Light color when selected or focused
+        color: state.isFocused ? 'white' : 'black',
+        cursor: 'pointer',
+    }),
+    control: (provided) => ({
+        ...provided,
+        backgroundColor: '#fff', // Background color of the select control
+        borderColor: '#009900', // Primary border color
+        boxShadow: 'none',
+        '&:hover': {
+            borderColor: '#66cc66', // Border color on hover
+        },
+    }),
+    singleValue: (provided) => ({
+        ...provided,
+        color: 'black', // Color of the selected value
+    }),
+    menu: (provided) => ({
+        ...provided,
+        zIndex: 9999, // Ensure dropdown appears above other elements
+    }),
 };
+  return (
+    <form
+      onSubmit={handleSubmit}
+      className="mb-6 p-4 bg-white rounded-lg shadow-md"
+    >
+      {showNotification && (
+        <Notification
+          message={notificationMessage}
+          type={notificationType}
+          onClose={() => setShowNotification(false)}
+        />
+      )}
+      <h3 className="text-lg font-semibold mb-3 text-primary-500">
+        {user ? "Edit User" : "Add User"}
+      </h3>
+      <input
+        type="text"
+        value={name}
+        onChange={(e) => setName(e.target.value)}
+        placeholder="Name"
+        required
+        className="border border-gray-300 rounded-md p-2 w-full mb-3"
+      />
+      <input
+        type="email"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+        placeholder="Email"
+        required
+        className="border border-gray-300 rounded-md p-2 w-full mb-3"
+      />
+      <label className="flex items-center mb-3">
+        <input
+          type="checkbox"
+          checked={status}
+          onChange={(e) => setStatus(e.target.checked)}
+          className="rounded-checkbox"
+        />
+        <span className="ml-2">Active</span>
+      </label>
 
-export default UserForm;
+      {/* Custom Styled Select */}
+      <Select
+        options={roleOptions}
+        value={selectedRole}
+        onChange={(option) => setSelectedRole(option)} // Set selected role as an object
+        placeholder="Select Role"
+        className="mb-3 "
+        styles={customStyles}
+      />
+      <div className="flex space-x-2">
+        <button
+          type="submit"
+          className="bg-primary-500 hover:bg-primary-400 text-white rounded-md py-2 px-4"
+        >
+          {user ? "Update User" : "Add User"}
+        </button>
+        {user &&
+        <button
+        type="button"
+        onClick={handleCancel}
+        className="bg-gray-300 rounded-md px-4 py-2 hover:bg-gray-400 transition"
+        >
+          Cancel
+        </button>
+        }
+      </div>
+    </form>
+  )
+}
+
+export default UserForm
