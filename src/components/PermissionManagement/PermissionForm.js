@@ -1,5 +1,6 @@
 // src/components/PermissionManagement/PermissionForm.js
 import React, { useState, useEffect } from 'react';
+import { v4 as uuidv4 } from 'uuid';
 
 const PermissionForm = ({ permission, onSubmit, existingPermissions = [], showNotification, onCancel }) => {
    const [name, setName] = useState('');
@@ -30,7 +31,7 @@ const PermissionForm = ({ permission, onSubmit, existingPermissions = [], showNo
        }
 
        const newPermissionData = {
-           id: permission?.id || Date.now(),
+           id: permission?.id || uuidv4(),
            name,
        };
 

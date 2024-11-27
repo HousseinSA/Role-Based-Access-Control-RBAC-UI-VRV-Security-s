@@ -1,148 +1,133 @@
 // src/App.js
-import React, { useState } from "react";
+import React, {  useState } from "react";
 import Notification from "./components/Notification";
-import Sidebar from "./components/Sidebar"; // Import Sidebar
-import MainContent from "./components/MainContent"; // Import MainContent
+import Sidebar from "./components/Sidebar"; 
+import MainContent from "./components/MainContent"; 
+import {editPermission, addPermission, deletePermission} from './components/PermissionManagement/permissionOperations'; 
+import {addRole, deleteRole, editRole} from './components/RoleManagement/roleOperations'
+import {addUser, deleteUser, editUser} from './components/UserManagement/userOperations'
+import { v4 as uuidv4 } from 'uuid';
 
 const App = () => {
-  const [users, setUsers] = useState(() => {
-    return JSON.parse(localStorage.getItem("users")) || [];
-  });
-  const [roles, setRoles] = useState(() => {
-    return JSON.parse(localStorage.getItem("roles")) || [];
-  });
-  const [permissions, setPermissions] = useState(() => {
-    return JSON.parse(localStorage.getItem("permissions")) || [
-      { id: 1, name: "Read" },
-      { id: 2, name: "Write" },
-      { id: 3, name: "Delete" }
-    ];
-  });
-  
+  const [users, setUsers] = useState(() => JSON.parse(localStorage.getItem("users")) || []);
+  const [roles, setRoles] = useState(() => JSON.parse(localStorage.getItem("roles")) || []);
+  const [permissions, setPermissions] = useState(() => JSON.parse(localStorage.getItem("permissions")) || [
+    { id: uuidv4(), name: "Read" },
+    { id: uuidv4(), name: "Write" },
+    { id: uuidv4(), name: "Delete" }
+  ]);
+
   const [currentUser, setCurrentUser] = useState(null);
   const [currentRole, setCurrentRole] = useState(null);
   const [currentEditPermission, setCurrentEditPermission] = useState(null); 
   const [notificationMessage, setNotificationMessage] = useState("");
   const [notificationType, setNotificationType] = useState("");
   const [showNotification, setShowNotification] = useState(false);
-  const [activeSection, setActiveSection] = useState("users"); // State for active section
+  const [activeSection, setActiveSection] = useState("users"); 
 
   // User operations
   const handleAddUser = (user) => {
-    if (users.some((u) => u.name === user.name || u.email === user.email)) {
-      showNotificationMessage("A user with this name or email already exists.", "error");
-      return;
+    const result = addUser(users, user);
+    if (!result.success) {
+      showNotificationMessage(result.message, "error");
+    } else {
+      setUsers(result.updatedUsers);
+      showNotificationMessage(result.message, "success");
     }
-    const newUser = { id: Date.now(), ...user };
-    const updatedUsers = [...users, newUser];
-    setUsers(updatedUsers);
-    localStorage.setItem("users", JSON.stringify(updatedUsers));
-    showNotificationMessage("User created successfully!", "success");
   };
 
   const handleEditUser = (updatedUser) => {
-    const updatedUsers = users.map((user) =>
-      user.id === updatedUser.id ? updatedUser : user
-    );
-    setUsers(updatedUsers);
-    localStorage.setItem("users", JSON.stringify(updatedUsers));
+    const result = editUser(users, updatedUser);
+    setUsers(result.updatedUsers);
+    showNotificationMessage(result.message, "success");
     setCurrentUser(null);
-    showNotificationMessage("User updated successfully!", "success");
   };
 
   const handleDeleteUser = (id) => {
-    const updatedUsers = users.filter((user) => user.id !== id);
-    setUsers(updatedUsers);
-    localStorage.setItem("users", JSON.stringify(updatedUsers));
-    showNotificationMessage("User deleted successfully!", "success");
+    const result = deleteUser(users, id);
+    setUsers(result.updatedUsers);
+    showNotificationMessage(result.message, "success");
   };
 
   // Role operations
   const handleAddRole = (role) => {
-    if (roles.some((r) => r.name === role.name)) {
-      showNotificationMessage("A role with this name already exists.", "error");
-      return;
+    const result = addRole(roles, role);
+    if (!result.success) {
+      showNotificationMessage(result.message, "error");
+    } else {
+      setRoles(result.updatedRoles);
+      showNotificationMessage(result.message, "success");
     }
-    
-    const newRole = { id: Date.now(), ...role };
-    const updatedRoles = [...roles, newRole];
-    
-    setRoles(updatedRoles);
-    localStorage.setItem("roles", JSON.stringify(updatedRoles));
-    showNotificationMessage("Role created successfully!", "success");
   };
 
   const handleEditRole = (updatedRole) => {
-    const updatedRoles = roles.map((role) =>
-      role.id === updatedRole.id ? updatedRole : role
-    );
-
-    setRoles(updatedRoles);
-    localStorage.setItem("roles", JSON.stringify(updatedRoles));
+    const result = editRole(roles, updatedRole);
+ 
+    if (result.success) {
+        setRoles(result.updatedRoles);
+        
+        // Update users with the new role name
+        const updatedUsers = users.map(user => {
+            if (user.role.id === updatedRole.id) {
+                return {
+                    ...user,
+                    role: {
+                        ...user.role,
+                        name: updatedRole.name,
+                    }
+                };
+            }
+            return user;
+        });
+ 
+        setUsers(updatedUsers); // Update users state
+        localStorage.setItem('users', JSON.stringify(updatedUsers)); // Update localStorage
+        localStorage.setItem('roles', JSON.stringify(result.updatedRoles)); // Update roles in localStorage
+        
+        showNotificationMessage(result.message, "success");
+    } else {
+        showNotificationMessage(result.message, "error");
+    }
     setCurrentRole(null);
-    showNotificationMessage("Role updated successfully!", "success");
-  };
+ };
 
   const handleDeleteRole = (id) => {
-    const updatedRoles = roles.filter((role) => role.id !== id);
-    
-    setRoles(updatedRoles);
-    localStorage.setItem("roles", JSON.stringify(updatedRoles));
-    showNotificationMessage("Role deleted successfully!", "success");
+    const result = deleteRole(roles, id, users); 
+    if (!result.success) {
+      showNotificationMessage(result.message, "error");
+    } else {
+      setRoles(result.updatedRoles);
+      showNotificationMessage(result.message, "success");
+    }
   };
 
   // Permission operations
-
-  // Permission operations
- 
-  // Permission operations
   const handleAddPermission = (permission) => {
-    if (permissions.some((p) => p.name === permission.name)) {
-      showNotificationMessage("A permission with this name already exists.", "error");
-      return;
+    const result = addPermission(permissions, permission);
+    if (!result.success) {
+      showNotificationMessage(result.message, "error");
+    } else {
+      setPermissions(result.updatedPermissions);
+      showNotificationMessage(result.message, "success");
     }
-
-    const newPermission = { id: Date.now(), ...permission };
-    const updatedPermissions = [...permissions, newPermission];
-
-    setPermissions(updatedPermissions);
-    localStorage.setItem("permissions", JSON.stringify(updatedPermissions));
-    showNotificationMessage("Permission created successfully!", "success");
   };
 
   const handleEditPermission = (updatedPermission) => {
-    const updatedPermissions = permissions.map((permission) =>
-      permission.id === updatedPermission.id ? updatedPermission : permission
-    );
-
-    setPermissions(updatedPermissions);
-    localStorage.setItem("permissions", JSON.stringify(updatedPermissions));
-    showNotificationMessage("Permission updated successfully!", "success");
-    
-    // Reset the current edit permission after updating
+    const result = editPermission(permissions, updatedPermission);
+    setPermissions(result.updatedPermissions);
+    showNotificationMessage(result.message, "success");
     setCurrentEditPermission(null);
   };
 
   const handleDeletePermission = (id) => {
-    // Prevent deletion of default permissions
-    if (["Read", "Write", "Delete"].includes(permissions.find(p => p.id === id)?.name)) {
-      showNotificationMessage("Default permissions cannot be deleted.", "error");
-      return;
+    const result = deletePermission(permissions, id, roles);
+    if (!result.success) {
+      showNotificationMessage(result.message, "error");
+    } else {
+      setPermissions(result.updatedPermissions);
+      showNotificationMessage(result.message, "success");
     }
-
-    // Prevent deletion if the permission is used in any role
-    if (roles.some(role => role.permissions.includes(permissions.find(p => p.id === id)?.name))) {
-      showNotificationMessage("Cannot delete this permission because it is assigned to a role.", "error");
-      return;
-    }
-
-    const updatedPermissions = permissions.filter((permission) => permission.id !== id);
-    
-    setPermissions(updatedPermissions);
-    localStorage.setItem("permissions", JSON.stringify(updatedPermissions)); // Update local storage
-    showNotificationMessage("Permission deleted successfully!", "success");
   };
-
 
   // Notification function
   const showNotificationMessage = (message, type) => {
@@ -163,26 +148,26 @@ const App = () => {
      <Sidebar activeSection={activeSection} setActiveSection={setActiveSection} />
      <MainContent
        activeSection={activeSection}
-        users={users}
-        roles={roles}
-        permissions={permissions}
-        currentUser={currentUser}
-        currentRole={currentRole}
-        currentEditPermission={currentEditPermission} // Pass current permission for editing
-        setCurrentUser={setCurrentUser}
-        setActiveSection={setActiveSection}
-        setCurrentRole={setCurrentRole}
-        showNotification={showNotificationMessage}
-        handleAddUser={handleAddUser}
-        handleEditUser={handleEditUser}
-        handleDeleteUser={handleDeleteUser}
-        handleAddRole={handleAddRole}
-        handleEditRole={handleEditRole}
-        handleDeleteRole={handleDeleteRole}
-        handleAddPermission={handleAddPermission} 
-        handleEditPermission={handleEditPermission} 
-        handleDeletePermission={handleDeletePermission} 
-        setCurrentEditPermission={setCurrentEditPermission} 
+       users={users}
+       roles={roles}
+       permissions={permissions}
+       currentUser={currentUser}
+       currentRole={currentRole}
+       currentEditPermission={currentEditPermission} 
+       setCurrentUser={setCurrentUser}
+       setActiveSection={setActiveSection}
+       setCurrentRole={setCurrentRole}
+       showNotification={showNotificationMessage}
+       handleAddUser={handleAddUser}
+       handleEditUser={handleEditUser}
+       handleDeleteUser={handleDeleteUser}
+       handleAddRole={handleAddRole}
+       handleEditRole={handleEditRole}
+       handleDeleteRole={handleDeleteRole}
+       handleAddPermission={handleAddPermission} 
+       handleEditPermission={handleEditPermission} 
+       handleDeletePermission={handleDeletePermission} 
+       setCurrentEditPermission={setCurrentEditPermission} 
      />
      {showNotification && (
        <Notification message={notificationMessage} type={notificationType} onClose={() => setShowNotification(false)} />

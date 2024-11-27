@@ -9,24 +9,29 @@ const UserForm = ({ user, onSubmit, roles, existingUsers, onCancel }) => {
   const [email, setEmail] = useState("")
   const [status, setStatus] = useState(true)
   const [selectedRole, setSelectedRole] = useState(null) // Change to null for React Select
-
   // Notification states
   const [notificationMessage, setNotificationMessage] = useState("")
   const [notificationType, setNotificationType] = useState("")
   const [showNotification, setShowNotification] = useState(false)
-
   // Populate the form fields when a user is selected for editing
   useEffect(() => {
     if (user) {
-      setName(user.name)
-      setEmail(user.email)
-      setStatus(user.status)
-      setSelectedRole({ value: user.role, label: user.role }) // Set selected role as an object
+        setName(user.name)
+        setEmail(user.email)
+        setStatus(user.status)
+        // Find the matching role in roles array
+        const userRole = roles.find(role => role.id === user.role.id)
+        if (userRole) {
+            setSelectedRole({
+                value: userRole.name,
+                label: userRole.name,
+                id: userRole.id
+            })
+        }
     } else {
-      resetFields()
+        resetFields()
     }
-  }, [user])
-
+}, [user, roles])
   const resetFields = () => {
     setName("")
     setEmail("")
@@ -44,33 +49,36 @@ const UserForm = ({ user, onSubmit, roles, existingUsers, onCancel }) => {
 
     // Check for duplicate users
     if (existingUsers.some((u) => u.name === name && u.id !== user?.id)) {
-      showNotificationMessage("A user with this name already exists.", "error")
-      return
+        showNotificationMessage("A user with this name already exists.", "error")
+        return
     }
 
     if (existingUsers.some((u) => u.email === email && u.id !== user?.id)) {
-      showNotificationMessage("A user with this email already exists.", "error")
-      return
+        showNotificationMessage("A user with this email already exists.", "error")
+        return
     }
 
     // Ensure all fields are filled
     if (!name || !email || !selectedRole) {
-      showNotificationMessage("Please fill in all fields.", "error")
-      return
+        showNotificationMessage("Please fill in all fields.", "error")
+        return
     }
 
     // Use uuid for generating a new user ID
     onSubmit({
-      id: user?.id || uuidv4(),
-      name,
-      email,
-      status,
-      role: selectedRole.value,
+        id: user?.id || uuidv4(),
+        name,
+        email,
+        status,
+        role: {
+            id: selectedRole.id,    // Use the role's id from selectedRole
+            name: selectedRole.value // Use the role's name
+        }
     })
 
     // Clear form fields after submission only if it's a new user creation
     if (!user) resetFields()
-  }
+}
 
   const showNotificationMessage = (message, type) => {
     setNotificationMessage(message)
@@ -87,33 +95,38 @@ const UserForm = ({ user, onSubmit, roles, existingUsers, onCancel }) => {
   const roleOptions = roles.map((role) => ({
     value: role.name,
     label: role.name,
-  }))
+    id: role.id  // Changed from roleId to id to match your role object structure
+}))
 
   const customStyles = {
     option: (provided, state) => ({
-        ...provided,
-        backgroundColor: state.isFocused ? '#66cc66' : state.isSelected ? '#c2f0c2' : '#fff', // Light color when selected or focused
-        color: state.isFocused ? 'white' : 'black',
-        cursor: 'pointer',
+      ...provided,
+      backgroundColor: state.isFocused
+        ? "#66cc66"
+        : state.isSelected
+        ? "#c2f0c2"
+        : "#fff", // Light color when selected or focused
+      color: state.isFocused ? "white" : "black",
+      cursor: "pointer",
     }),
     control: (provided) => ({
-        ...provided,
-        backgroundColor: '#fff', // Background color of the select control
-        borderColor: '#009900', // Primary border color
-        boxShadow: 'none',
-        '&:hover': {
-            borderColor: '#66cc66', // Border color on hover
-        },
+      ...provided,
+      backgroundColor: "#fff", // Background color of the select control
+      borderColor: "#009900", // Primary border color
+      boxShadow: "none",
+      "&:hover": {
+        borderColor: "#66cc66", // Border color on hover
+      },
     }),
     singleValue: (provided) => ({
-        ...provided,
-        color: 'black', // Color of the selected value
+      ...provided,
+      color: "black", // Color of the selected value
     }),
     menu: (provided) => ({
-        ...provided,
-        zIndex: 9999, // Ensure dropdown appears above other elements
+      ...provided,
+      zIndex: 9999, // Ensure dropdown appears above other elements
     }),
-};
+  }
   return (
     <form
       onSubmit={handleSubmit}
@@ -171,15 +184,15 @@ const UserForm = ({ user, onSubmit, roles, existingUsers, onCancel }) => {
         >
           {user ? "Update User" : "Add User"}
         </button>
-        {user &&
-        <button
-        type="button"
-        onClick={handleCancel}
-        className="bg-gray-300 rounded-md px-4 py-2 hover:bg-gray-400 transition"
-        >
-          Cancel
-        </button>
-        }
+        {user && (
+          <button
+            type="button"
+            onClick={handleCancel}
+            className="bg-gray-300 rounded-md px-4 py-2 hover:bg-gray-400 transition"
+          >
+            Cancel
+          </button>
+        )}
       </div>
     </form>
   )

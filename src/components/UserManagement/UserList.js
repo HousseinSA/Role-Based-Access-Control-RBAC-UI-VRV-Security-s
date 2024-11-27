@@ -100,7 +100,7 @@ const UserList = ({ users, onEdit, onDelete }) => {
                     user.role === "Admin" ? "bg-primary-100" : "bg-gray-100"
                   } text-gray-800`}
                 >
-                  {user.role}
+                  {user.role.name}
                 </span>
               </td>
               <td className="py-2 px-4 flex gap-2">
