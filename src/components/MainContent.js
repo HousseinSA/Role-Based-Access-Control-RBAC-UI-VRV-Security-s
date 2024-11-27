@@ -1,4 +1,3 @@
-// src/components/MainContent.js
 import React, { useRef } from "react"
 import { gsap } from "gsap"
 import Select from "react-select"

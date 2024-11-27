@@ -1,4 +1,3 @@
-// src/components/RoleManagement/RoleSection.js
 import React from "react"
 import RoleForm from "./RoleForm"
 import RoleList from "./RoleList"

@@ -1,8 +1,8 @@
-// src/components/UserManagement/UserList.js
 import React, { useState } from "react"
 import { Edit2 as EditIcon, Trash as DeleteIcon } from "lucide-react"
 import ConfirmationDialog from "../ConfirmationDialog"
 import Select from "react-select" // Import React Select
+import {customStyles} from './UserForm'
 
 const UserList = ({ users, onEdit, onDelete }) => {
   const [showConfirm, setShowConfirm] = useState(false)
@@ -54,7 +54,7 @@ const UserList = ({ users, onEdit, onDelete }) => {
         placeholder="Search users..."
         value={searchQuery}
         onChange={(e) => setSearchQuery(e.target.value)}
-        className="border border-gray-300 rounded-md p-2 mb-4 w-full"
+        className="border border-gray-300 rounded-md p-2 outline-primary-500 mb-4 w-full"
       />
 
       {/* Sort Options using react-select */}
@@ -65,6 +65,7 @@ const UserList = ({ users, onEdit, onDelete }) => {
           value={sortOptions.find((option) => option.value === sortCriteria)} // Set the current sort option
           onChange={(option) => setSortCriteria(option.value)} // Update sort criteria based on selection
           className="border border-gray-300 w-64 inline-block rounded-md p-2"
+          styles={customStyles}
         />
       </div>
 

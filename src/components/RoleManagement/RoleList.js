@@ -1,4 +1,3 @@
-// src/components/RoleManagement/RoleList.js
 import React, { useState } from "react";
 import { Edit2 as EditIcon, Trash as DeleteIcon } from "lucide-react";
 import ConfirmationDialog from "../ConfirmationDialog";
@@ -28,7 +27,7 @@ const RoleList = ({ roles, onEdit, onDelete, users,showNotification }) => {
 
   return (
     <div className="overflow-x-auto p-4">
-      <h2 className="text-xl font-semibold mb-4">Role Management</h2>
+      <h2 className="text-xl font-semibold mb-4 text-primary-500">Role Management</h2>
       <table className="min-w-full bg-white shadow-md rounded-lg">
         <thead>
           <tr className="bg-gray-200">
@@ -45,7 +44,7 @@ const RoleList = ({ roles, onEdit, onDelete, users,showNotification }) => {
                 <div className="flex flex-wrap gap-2">
                   {role.permissions.map((permission,index) => (
                     <span key={index} className={`inline-block py-1 px-3 rounded-full bg-gray-200 text-gray-800`}>
-                      {permission}
+                      {permission.name}
                     </span>
                   ))}
                 </div>

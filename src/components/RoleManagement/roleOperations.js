@@ -1,4 +1,3 @@
-// src/lib/roleOperations.js
 import { v4 as uuidv4 } from 'uuid';
 
 export const addRole = (roles, role) => {

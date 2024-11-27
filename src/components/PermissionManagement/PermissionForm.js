@@ -1,10 +1,8 @@
-// src/components/PermissionManagement/PermissionForm.js
 import React, { useState, useEffect } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 
 const PermissionForm = ({ permission, onSubmit, existingPermissions = [], showNotification, onCancel }) => {
    const [name, setName] = useState('');
-
    useEffect(() => {
        if (permission) {
            setName(permission.name); // Set name for editing
@@ -44,14 +42,14 @@ const PermissionForm = ({ permission, onSubmit, existingPermissions = [], showNo
 
    return (
        <form onSubmit={handleSubmit} className="mb-6 p-4 bg-white rounded-lg shadow-md">
-           <h3 className="text-lg font-semibold mb-3">{permission ? 'Update Permission' : 'Add Permission'}</h3>
+           <h3 className="text-lg font-semibold mb-3  text-primary-500">{permission ? 'Update Permission' : 'Add Permission'}</h3>
            <input 
                type="text" 
                value={name} 
                onChange={(e) => setName(e.target.value)} 
                placeholder="Permission Name" 
                required 
-               className="border border-gray-300 rounded-md p-2 w-full mb-3"
+               className="border border-gray-300 outline-primary-500 rounded-md p-2 w-full mb-3"
            />
            <button type='submit' className='bg-primary-500 text-white rounded-md py-2 px-4'>
                {permission ? 'Update Permission' : 'Add Permission'}

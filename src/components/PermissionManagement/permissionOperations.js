@@ -1,4 +1,3 @@
-// src/lib/permissionOperations.js
 import { v4 as uuidv4 } from 'uuid';
 
 export const addPermission = (permissions, permission) => {

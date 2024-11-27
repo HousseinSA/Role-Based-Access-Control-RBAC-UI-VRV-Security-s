@@ -1,5 +1,4 @@
-// src/App.js
-import React, {  useState } from "react";
+import React, { useState } from "react";
 import Notification from "./components/Notification";
 import Sidebar from "./components/Sidebar"; 
 import MainContent from "./components/MainContent"; 
@@ -64,41 +63,50 @@ const App = () => {
     const result = editRole(roles, updatedRole);
  
     if (result.success) {
-        setRoles(result.updatedRoles);
-        
-        // Update users with the new role name
-        const updatedUsers = users.map(user => {
-            if (user.role.id === updatedRole.id) {
-                return {
-                    ...user,
-                    role: {
-                        ...user.role,
-                        name: updatedRole.name,
-                    }
-                };
+      setRoles(result.updatedRoles);
+      
+      // Update users with the new role name
+      const updatedUsers = users.map(user => {
+        if (user.role.id === updatedRole.id) {
+          return {
+            ...user,
+            role: {
+              ...user.role,
+              name: updatedRole.name,
             }
-            return user;
-        });
+          };
+        }
+        return user;
+      });
  
-        setUsers(updatedUsers); // Update users state
-        localStorage.setItem('users', JSON.stringify(updatedUsers)); // Update localStorage
-        localStorage.setItem('roles', JSON.stringify(result.updatedRoles)); // Update roles in localStorage
-        
-        showNotificationMessage(result.message, "success");
+      setUsers(updatedUsers);
+      localStorage.setItem('users', JSON.stringify(updatedUsers));
+      localStorage.setItem('roles', JSON.stringify(result.updatedRoles));
+      
+      showNotificationMessage(result.message, "success");
     } else {
-        showNotificationMessage(result.message, "error");
+      showNotificationMessage(result.message, "error");
     }
     setCurrentRole(null);
- };
+  };
 
-  const handleDeleteRole = (id) => {
-    const result = deleteRole(roles, id, users); 
-    if (!result.success) {
-      showNotificationMessage(result.message, "error");
-    } else {
-      setRoles(result.updatedRoles);
-      showNotificationMessage(result.message, "success");
+  const handleDeleteRole = (roleId) => {
+    // Check if any users are using this role
+    const isRoleInUse = users.some(user => user.role.id === roleId);
+
+    if (isRoleInUse) {
+      showNotificationMessage(
+        "Cannot delete this role as it is assigned to one or more users",
+        "error"
+      );
+      return;
     }
+
+    // If role is not in use, proceed with deletion
+    const updatedRoles = roles.filter((role) => role.id !== roleId);
+    setRoles(updatedRoles);
+    localStorage.setItem("roles", JSON.stringify(updatedRoles));
+    showNotificationMessage("Role deleted successfully", "success");
   };
 
   // Permission operations
@@ -113,21 +121,69 @@ const App = () => {
   };
 
   const handleEditPermission = (updatedPermission) => {
-    const result = editPermission(permissions, updatedPermission);
-    setPermissions(result.updatedPermissions);
-    showNotificationMessage(result.message, "success");
+    // Step 1: Update the permissions array with the updated permission name
+    const updatedPermissions = permissions.map(permission =>
+      permission.id === updatedPermission.id
+        ? { ...permission, name: updatedPermission.name } // Update the permission name
+        : permission
+    );
+  
+    // Update the permissions state
+    setPermissions(updatedPermissions);
+  
+    // Step 2: Update roles that use the updated permission
+    const updatedRoles = roles.map(role => {
+      // Check if the role uses the updated permission, if so, update it
+      const updatedRolePermissions = role.permissions.map(permission => 
+        permission.id === updatedPermission.id
+          ? { ...permission, name: updatedPermission.name } // Update the permission name
+          : permission
+      );
+  
+      // Return the updated role
+      return {
+        ...role,
+        permissions: updatedRolePermissions
+      };
+    });
+  
+    // Step 3: Update the roles state
+    setRoles(updatedRoles);
+  
+    // Step 4: Persist the updated roles and permissions to localStorage
+    localStorage.setItem('permissions', JSON.stringify(updatedPermissions));
+    localStorage.setItem('roles', JSON.stringify(updatedRoles));
+  
+    // Step 5: Show a success notification
+    showNotificationMessage("Permission updated successfully", "success");
+  
+    // Step 6: Reset current edit permission state (optional)
     setCurrentEditPermission(null);
   };
+  
+  
 
   const handleDeletePermission = (id) => {
+    // Check if the permission is used by any roles
+    const isPermissionInUse = roles.some(role =>
+      role.permissions && role.permissions.some(permission => permission.id === id)
+    );
+  
+    if (isPermissionInUse) {
+      showNotificationMessage("Cannot delete this permission as it is assigned to one or more roles", "error");
+      return;
+    }
+  
     const result = deletePermission(permissions, id, roles);
     if (!result.success) {
       showNotificationMessage(result.message, "error");
     } else {
       setPermissions(result.updatedPermissions);
+      localStorage.setItem("permissions", JSON.stringify(result.updatedPermissions));
       showNotificationMessage(result.message, "success");
     }
   };
+  
 
   // Notification function
   const showNotificationMessage = (message, type) => {
@@ -135,7 +191,6 @@ const App = () => {
     setNotificationType(type);
     setShowNotification(true);
 
-    // Hide notification after a delay
     setTimeout(() => {
       setShowNotification(false);
       setNotificationMessage("");
@@ -144,36 +199,40 @@ const App = () => {
   };
 
   return (
-   <div className="flex h-screen overflow-hidden">
-     <Sidebar activeSection={activeSection} setActiveSection={setActiveSection} />
-     <MainContent
-       activeSection={activeSection}
-       users={users}
-       roles={roles}
-       permissions={permissions}
-       currentUser={currentUser}
-       currentRole={currentRole}
-       currentEditPermission={currentEditPermission} 
-       setCurrentUser={setCurrentUser}
-       setActiveSection={setActiveSection}
-       setCurrentRole={setCurrentRole}
-       showNotification={showNotificationMessage}
-       handleAddUser={handleAddUser}
-       handleEditUser={handleEditUser}
-       handleDeleteUser={handleDeleteUser}
-       handleAddRole={handleAddRole}
-       handleEditRole={handleEditRole}
-       handleDeleteRole={handleDeleteRole}
-       handleAddPermission={handleAddPermission} 
-       handleEditPermission={handleEditPermission} 
-       handleDeletePermission={handleDeletePermission} 
-       setCurrentEditPermission={setCurrentEditPermission} 
-     />
-     {showNotification && (
-       <Notification message={notificationMessage} type={notificationType} onClose={() => setShowNotification(false)} />
-     )}
-   </div>
- );
+    <div className="flex h-screen overflow-hidden">
+      <Sidebar activeSection={activeSection} setActiveSection={setActiveSection} />
+      <MainContent
+        activeSection={activeSection}
+        users={users}
+        roles={roles}
+        permissions={permissions}
+        currentUser={currentUser}
+        currentRole={currentRole}
+        currentEditPermission={currentEditPermission} 
+        setCurrentUser={setCurrentUser}
+        setActiveSection={setActiveSection}
+        setCurrentRole={setCurrentRole}
+        showNotification={showNotificationMessage}
+        handleAddUser={handleAddUser}
+        handleEditUser={handleEditUser}
+        handleDeleteUser={handleDeleteUser}
+        handleAddRole={handleAddRole}
+        handleEditRole={handleEditRole}
+        handleDeleteRole={handleDeleteRole}
+        handleAddPermission={handleAddPermission} 
+        handleEditPermission={handleEditPermission} 
+        handleDeletePermission={handleDeletePermission} 
+        setCurrentEditPermission={setCurrentEditPermission} 
+      />
+      {showNotification && (
+        <Notification 
+          message={notificationMessage} 
+          type={notificationType} 
+          onClose={() => setShowNotification(false)} 
+        />
+      )}
+    </div>
+  );
 };
 
 export default App;

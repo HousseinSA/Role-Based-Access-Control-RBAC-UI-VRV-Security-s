@@ -1,9 +1,32 @@
-// src/components/UserManagement/UserForm.js
 import React, { useState, useEffect } from "react"
 import Notification from "../Notification"
-import Select from "react-select" // Import React Select
-import { v4 as uuidv4 } from "uuid" // Import uuid
+import Select from "react-select" 
+import { v4 as uuidv4 } from "uuid" 
 
+export const customStyles = {
+  option: (provided, state) => ({
+    ...provided,
+    backgroundColor: state.isFocused
+      ? "#66cc66"
+      : state.isSelected
+      ? "#c2f0c2"
+      : "#fff", // Light color when selected or focused
+    color: state.isFocused ? "white" : "black",
+  }),
+  control: (provided) => ({
+    ...provided,
+    backgroundColor: "#fff", // Background color of the select control
+    borderColor: "#009900", // Primary border color
+    boxShadow: "none",
+    "&:hover": {
+      borderColor: "#66cc66", // Border color on hover
+    },
+  }),
+  singleValue: (provided) => ({
+    ...provided,
+    color: "black", // Color of the selected value
+  }),
+}
 const UserForm = ({ user, onSubmit, roles, existingUsers, onCancel }) => {
   const [name, setName] = useState("")
   const [email, setEmail] = useState("")
@@ -98,35 +121,7 @@ const UserForm = ({ user, onSubmit, roles, existingUsers, onCancel }) => {
     id: role.id  // Changed from roleId to id to match your role object structure
 }))
 
-  const customStyles = {
-    option: (provided, state) => ({
-      ...provided,
-      backgroundColor: state.isFocused
-        ? "#66cc66"
-        : state.isSelected
-        ? "#c2f0c2"
-        : "#fff", // Light color when selected or focused
-      color: state.isFocused ? "white" : "black",
-      cursor: "pointer",
-    }),
-    control: (provided) => ({
-      ...provided,
-      backgroundColor: "#fff", // Background color of the select control
-      borderColor: "#009900", // Primary border color
-      boxShadow: "none",
-      "&:hover": {
-        borderColor: "#66cc66", // Border color on hover
-      },
-    }),
-    singleValue: (provided) => ({
-      ...provided,
-      color: "black", // Color of the selected value
-    }),
-    menu: (provided) => ({
-      ...provided,
-      zIndex: 9999, // Ensure dropdown appears above other elements
-    }),
-  }
+  
   return (
     <form
       onSubmit={handleSubmit}
@@ -148,7 +143,7 @@ const UserForm = ({ user, onSubmit, roles, existingUsers, onCancel }) => {
         onChange={(e) => setName(e.target.value)}
         placeholder="Name"
         required
-        className="border border-gray-300 rounded-md p-2 w-full mb-3"
+        className="border border-gray-300 rounded-md p-2 w-full mb-3 outline-primary-500"
       />
       <input
         type="email"
@@ -156,7 +151,7 @@ const UserForm = ({ user, onSubmit, roles, existingUsers, onCancel }) => {
         onChange={(e) => setEmail(e.target.value)}
         placeholder="Email"
         required
-        className="border border-gray-300 rounded-md p-2 w-full mb-3"
+        className="border border-gray-300 rounded-md p-2 w-full mb-3 outline-primary-500"
       />
       <label className="flex items-center mb-3">
         <input
